@@ -76,3 +76,28 @@ def health_check():
         "message": "API funcionando al 100%",
         "environment": "production"
     }
+
+@app.get("/api/transactions")
+def get_transactions():
+    """Devuelve el historial de transacciones de los últimos 30 días para los reportes."""
+    try:
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+        cur = conn.cursor()
+        # Traemos todo lo de los últimos 30 días
+        cur.execute("""
+            SELECT transaction_type, sale_amount, received_amount, change_amount, 
+                   money_in, money_out, notes, created_at
+            FROM transactions_log 
+            WHERE created_at >= NOW() - INTERVAL '30 days'
+            ORDER BY created_at DESC
+        """)
+        rows = cur.fetchall()
+        conn.close()
+        
+        # Formatear la fecha para que el HTML la entienda
+        for row in rows:
+            row['created_at'] = row['created_at'].isoformat()
+            
+        return rows
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
