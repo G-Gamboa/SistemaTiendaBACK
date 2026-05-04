@@ -66,3 +66,13 @@ def process_transaction(t: Transaction):
         return {"status": "success", "message": "Transacción registrada exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/")
+@app.get("/health")
+def health_check():
+    """Endpoint de estado para confirmar que la API está viva."""
+    return {
+        "status": "ok", 
+        "message": "API funcionando al 100%",
+        "environment": "production"
+    }
